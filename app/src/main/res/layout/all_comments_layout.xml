@@ -43,14 +43,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Date:"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textSize="14sp"
+                    />
             </LinearLayout>
         </LinearLayout>
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="2dp"
+            android:layout_height="1dp"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:background="@color/colorTextView" />
@@ -67,8 +67,8 @@
                 android:layout_height="wrap_content"
                 android:text="Comment text will Display here"
                 android:textColor="@color/colorProfileBack"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textSize="14sp"
+                />
 
             <TextView
                 android:id="@+id/comment_time"
@@ -76,8 +76,8 @@
                 android:layout_height="wrap_content"
                 android:text="Time:"
                 android:textAlignment="viewEnd"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textSize="12sp"
+                />
         </LinearLayout>
     </LinearLayout>
 

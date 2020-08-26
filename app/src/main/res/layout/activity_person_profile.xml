@@ -110,8 +110,8 @@
                 android:orientation="vertical">
 
                 <ImageView
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
                     android:src="@drawable/posts_icon_90"
                     android:layout_margin="2dp"/>
             </LinearLayout>
@@ -126,8 +126,8 @@
                 android:orientation="vertical">
 
                 <ImageView
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
                     android:src="@drawable/message_icon"
                     android:layout_margin="2dp"/>
             </LinearLayout>

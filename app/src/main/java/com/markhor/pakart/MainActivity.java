@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -17,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.material.navigation.NavigationView;
@@ -28,7 +30,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Picasso;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.markhor.pakart.notifications.Token;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -110,11 +113,33 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         DisplayAllUsersPosts();
+        checkUserStatus();
+        updateToken(FirebaseInstanceId.getInstance().getToken());
+    }
+
+    public void updateToken(String token) {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Tokens");
+        Token mToken = new Token(token);
+        ref.child(currentUserId).setValue(mToken);
     }
 
     @Override
     protected void onResume() {
+        checkUserStatus();
         super.onResume();
+    }
+
+    private void checkUserStatus() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            currentUserId = user.getUid();
+            SharedPreferences sp = getSharedPreferences("SP_USER", MODE_PRIVATE);
+            SharedPreferences.Editor editor = sp.edit();
+            editor.putString("Current_USERID", currentUserId);
+            editor.apply();
+        } else {
+            SendUserToLoginActivity("MainActivity");
+        }
     }
 
     private void DisplayAllUsersPosts() {
@@ -133,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.hasChild("profileimage")) {
                             String image = snapshot.child("profileimage").getValue().toString();
-                            Picasso.get().load(image).placeholder(R.drawable.profile).into(holder.mProfileImage);
+                            Glide.with(MainActivity.this).load(image).placeholder(R.drawable.profile).into(holder.mProfileImage);
                         }
                     }
 
@@ -142,9 +167,23 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 });
-                Picasso.get().load(model.postimage).into(holder.mPostImage);
+                Glide.with(MainActivity.this).load(model.postimage).placeholder(R.drawable.post_background).into(holder.mPostImage);
 
                 holder.setLikesButtonStatus(LikesRef, currentUserId, PostKey);
+
+                holder.mUserName.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        PostProfileOrImageClick(model.uid);
+                    }
+                });
+
+                holder.mProfileImage.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        PostProfileOrImageClick(model.uid);
+                    }
+                });
 
                 holder.mPurchasePicBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -210,6 +249,12 @@ public class MainActivity extends AppCompatActivity {
         postList.setAdapter(adapter);
     }
 
+    private void PostProfileOrImageClick(String uid) {
+        Intent personProfileIntent = new Intent(this, PersonProfileActivity.class);
+        personProfileIntent.putExtra("VisitUserId", uid);
+        startActivity(personProfileIntent);
+    }
+
     private void GetImageAndName() {
         UsersRef.child(currentUserId).addValueEventListener(new ValueEventListener() {
             @Override
@@ -218,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
                     String fullName = snapshot.child("fullname").getValue().toString();
                     mProfileImage = snapshot.child("profileimage").getValue().toString();
                     NavProfileName.setText(fullName);
-                    Picasso.get().load(mProfileImage).placeholder(R.drawable.profile).into(NavProfileImage);
+                    Glide.with(MainActivity.this).load(mProfileImage).placeholder(R.drawable.profile).into(NavProfileImage);
                 }
             }
 

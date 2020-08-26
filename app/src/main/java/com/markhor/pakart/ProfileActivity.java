@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -25,7 +26,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Picasso;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -90,7 +90,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                     String myCountry = snapshot.child("country").getValue().toString();
                     String myProfileName = snapshot.child("fullname").getValue().toString();
 
-                    Picasso.get().load(myProfileImage).placeholder(R.drawable.profile).into(userProfImage);
+                    Glide.with(ProfileActivity.this).load(myProfileImage).placeholder(R.drawable.profile).into(userProfImage);
                     userName.setText("@" + myUserName);
                     userCountry.setText(myCountry);
                     userProfName.setText(myProfileName);
@@ -123,7 +123,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.hasChild("profileimage")) {
                             String image = snapshot.child("profileimage").getValue().toString();
-                            Picasso.get().load(image).placeholder(R.drawable.profile).into(holder.mProfileImage);
+                            Glide.with(ProfileActivity.this).load(image).placeholder(R.drawable.profile).into(holder.mProfileImage);
                         }
                     }
 
@@ -132,7 +132,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
                     }
                 });
-                Picasso.get().load(model.postimage).into(holder.mPostImage);
+                Glide.with(ProfileActivity.this).load(model.postimage).into(holder.mPostImage);
 
                 holder.setLikesButtonStatus(LikesRef, currentUserId, PostKey);
 

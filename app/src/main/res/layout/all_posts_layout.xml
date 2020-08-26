@@ -87,6 +87,7 @@
             android:layout_height="200dp"
             android:layout_margin="7dp"
             android:adjustViewBounds="true"
+            android:src="@drawable/add_post"
             android:scaleType="centerCrop" />
         <LinearLayout
             android:layout_width="match_parent"

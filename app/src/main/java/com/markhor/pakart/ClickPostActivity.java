@@ -15,13 +15,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Picasso;
 
 public class ClickPostActivity extends AppCompatActivity {
 
@@ -59,7 +59,7 @@ public class ClickPostActivity extends AppCompatActivity {
                     postimage = snapshot.child("postimage").getValue().toString();
                     databaseUserId = snapshot.child("uid").getValue().toString();
                     PostDescription.setText(Description);
-                    Picasso.get().load(postimage).into(PostImage);
+                    Glide.with(ClickPostActivity.this).load(postimage).placeholder(R.drawable.post_background).into(PostImage);
 
                     if(currentUserId.equals(databaseUserId))
                     {

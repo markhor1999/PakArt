@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -25,7 +26,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -111,7 +111,7 @@ public class CommentsActivity extends AppCompatActivity {
                 holder.mComment.setText(model.comment);
                 holder.mDate.setText(" Date: " + model.date);
 
-                Picasso.get().load(model.profileimage).placeholder(R.drawable.profile).into(holder.mProfileImage);
+                Glide.with(CommentsActivity.this).load(model.profileimage).placeholder(R.drawable.profile).into(holder.mProfileImage);
             }
 
             @NonNull

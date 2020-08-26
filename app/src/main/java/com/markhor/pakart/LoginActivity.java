@@ -224,7 +224,6 @@ public class LoginActivity extends AppCompatActivity {
                             if(task.isSuccessful())
                             {
                                 SendUserToMainActivity();
-                                Toast.makeText(LoginActivity.this, "Logged in Successful", Toast.LENGTH_SHORT).show();
                             }
                             else
                             {

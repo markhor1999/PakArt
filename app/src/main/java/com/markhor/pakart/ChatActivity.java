@@ -21,6 +21,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -33,6 +34,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.markhor.pakart.notifications.APIService;
+import com.markhor.pakart.notifications.Client;
+import com.markhor.pakart.notifications.Data;
+import com.markhor.pakart.notifications.Response;
+import com.markhor.pakart.notifications.Sender;
+import com.markhor.pakart.notifications.Token;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
@@ -43,6 +50,8 @@ import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import retrofit2.Call;
+import retrofit2.Callback;
 
 public class ChatActivity extends AppCompatActivity {
     private Toolbar mToolbar;
@@ -53,12 +62,15 @@ public class ChatActivity extends AppCompatActivity {
     private LinearLayoutManager linearLayoutManager;
     private MessageAdapter messageAdapter;
 
-    private String messageReceiverId, messageReceiverName, messageSenderId, saveCurrentDate, saveCurrentTime;
+    private String messageReceiverId, messageSenderId, saveCurrentDate, saveCurrentTime;
     private TextView receiverName;
     private CircleImageView receiverProfileImage;
 
     private DatabaseReference RootRef;
     private FirebaseAuth mAuth;
+
+    private APIService apiService;
+    private Boolean notify = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +81,6 @@ public class ChatActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         messageSenderId = mAuth.getCurrentUser().getUid();
         //
-        messageReceiverName = getIntent().getExtras().get("userName").toString();
         messageReceiverId = getIntent().getExtras().get("VisitUserId").toString();
         //ToolBar
         mToolbar = findViewById(R.id.chat_app_bar);
@@ -88,15 +99,18 @@ public class ChatActivity extends AppCompatActivity {
         receiverProfileImage = findViewById(R.id.custom_profile_image);
         //
         SendMessageButton = findViewById(R.id.send_message_button);
-        SendImageFileButton = findViewById(R.id.send_image_file_button);
+        //SendImageFileButton = findViewById(R.id.send_image_file_button);
         UserMessageInput = findViewById(R.id.input_message);
         //
         UserMessageList = findViewById(R.id.message_list_users);
-        messageAdapter = new MessageAdapter(messageList);
+        messageAdapter = new MessageAdapter(messageList, this);
         linearLayoutManager = new LinearLayoutManager(this);
         UserMessageList.setHasFixedSize(true);
         UserMessageList.setLayoutManager(linearLayoutManager);
         UserMessageList.setAdapter(messageAdapter);
+
+        apiService = Client.getRetrofit("https://fcm.googleapis.com/").create(APIService.class);
+
 
         DisplayReceiverInfo();
 
@@ -104,7 +118,9 @@ public class ChatActivity extends AppCompatActivity {
         SendMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                notify = true;
                 SendMessageToUser();
+                UserMessageInput.setText(null);
             }
         });
         FetchMessages();
@@ -148,7 +164,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void SendMessageToUser()
     {
-        String messageText = UserMessageInput.getText().toString();
+        final String messageText = UserMessageInput.getText().toString();
         if(TextUtils.isEmpty(messageText))
         {
             Toast.makeText(this, "Message Cannot Be Empty", Toast.LENGTH_SHORT).show();
@@ -185,29 +201,75 @@ public class ChatActivity extends AppCompatActivity {
                     if(!task.isSuccessful())
                     {
                         Toast.makeText(ChatActivity.this, "Error " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                        UserMessageInput.setText(null);
                     }
                     else
                     {
-                        UserMessageInput.setText(null);
+                        DatabaseReference databaseReference = RootRef.child(messageSenderId);
+                        databaseReference.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                ModelUser user = snapshot.getValue(ModelUser.class);
+                                if(notify) {
+                                    sendNotification(messageReceiverId, user.getFullname(), messageText);
+                                }
+                                notify = false;
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+
+                            }
+                        });
                     }
                 }
             });
+
         }
     }
 
+    private void sendNotification(final String messageReceiverId, final String fullname, final String message) {
+        DatabaseReference allTokensRef = FirebaseDatabase.getInstance().getReference().child("Tokens");
+        Query query = allTokensRef.orderByKey().equalTo(messageReceiverId);
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    Token token = ds.getValue(Token.class);
+                    Data data = new Data(messageSenderId, fullname+""+message,"New Message", messageReceiverId, R.drawable.logo);
+                    Sender sender = new Sender(data, token.getToken());
+                    apiService.sendNotification(sender)
+                            .enqueue(new Callback<Response>() {
+                                @Override
+                                public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
+                                    Toast.makeText(ChatActivity.this, ""+response.message(), Toast.LENGTH_SHORT).show();
+                                }
+
+                                @Override
+                                public void onFailure(Call<Response> call, Throwable t) {
+
+                                }
+                            });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
     private void DisplayReceiverInfo() {
-        receiverName.setText(messageReceiverName);
         RootRef.child("Users").child(messageReceiverId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if(snapshot.exists())
                 {
                     final String profileImage = snapshot.child("profileimage").getValue().toString();
-                    Picasso.get().load(profileImage).placeholder(R.drawable.profile).into(receiverProfileImage);
+                    Glide.with(ChatActivity.this).load(profileImage).placeholder(R.drawable.profile).into(receiverProfileImage);
+                    receiverName.setText(snapshot.child("fullname").getValue().toString());
                 }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
 

@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -29,7 +30,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -99,7 +99,7 @@ public class SettingsActivity extends AppCompatActivity {
                     String myProfileName = snapshot.child("fullname").getValue().toString();
                     String myContactNumber = snapshot.child("contact").getValue().toString();
 
-                    Picasso.get().load(myProfileImage).placeholder(R.drawable.profile).into(userProfImage);
+                    Glide.with(SettingsActivity.this).load(myProfileImage).placeholder(R.drawable.profile).into(userProfImage);
                     userName.getEditText().setText(myUserName);
                     userCountry.getEditText().setText(myCountry);
                     userStatus.getEditText().setText(myProfileStatus);

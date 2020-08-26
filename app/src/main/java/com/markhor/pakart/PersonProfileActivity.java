@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -28,7 +29,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -103,6 +103,24 @@ public class PersonProfileActivity extends AppCompatActivity implements View.OnC
         mPersonProfileMessageButton.setOnClickListener(this);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mAuth = FirebaseAuth.getInstance();
+        mCurrentUserId = mAuth.getCurrentUser().getUid();
+        mReceiverUserId = getIntent().getExtras().get("VisitUserId").toString();
+
+        if (mCurrentUserId.equals(mReceiverUserId)) {
+            sendUserToPersonActivity();
+        }
+    }
+
+    private void sendUserToPersonActivity() {
+        Intent profileIntent = new Intent(this, ProfileActivity.class);
+        startActivity(profileIntent);
+        finish();
+    }
+
     private void ManageFollowOrUnFollowButton() {
         FollowingRef.child(mCurrentUserId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -139,7 +157,7 @@ public class PersonProfileActivity extends AppCompatActivity implements View.OnC
                     String myCountry = snapshot.child("country").getValue().toString();
                     String myProfileName = snapshot.child("fullname").getValue().toString();
 
-                    Picasso.get().load(myProfileImage).placeholder(R.drawable.profile).into(userProfImage);
+                    Glide.with(PersonProfileActivity.this).load(myProfileImage).placeholder(R.drawable.profile).into(userProfImage);
                     userName.setText("@" + myUserName);
                     userCountry.setText("Country: " + myCountry);
                     userProfName.setText(myProfileName);
@@ -170,7 +188,7 @@ public class PersonProfileActivity extends AppCompatActivity implements View.OnC
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.hasChild("profileimage")) {
                             String image = snapshot.child("profileimage").getValue().toString();
-                            Picasso.get().load(image).placeholder(R.drawable.profile).into(holder.mProfileImage);
+                            Glide.with(PersonProfileActivity.this).load(image).placeholder(R.drawable.profile).into(holder.mProfileImage);
                         }
                     }
 
@@ -179,7 +197,7 @@ public class PersonProfileActivity extends AppCompatActivity implements View.OnC
 
                     }
                 });
-                Picasso.get().load(model.postimage).into(holder.mPostImage);
+                Glide.with(PersonProfileActivity.this).load(model.postimage).placeholder(R.drawable.post_background).into(holder.mPostImage);
 
                 holder.setLikesButtonStatus(LikesRef, mCurrentUserId, PostKey);
 
@@ -290,11 +308,11 @@ public class PersonProfileActivity extends AppCompatActivity implements View.OnC
             SendUserToMessageActivity();
     }
 
-    private void SendUserToMessageActivity()
-    {
+    private void SendUserToMessageActivity() {
         Intent messageIntent = new Intent(this, ChatActivity.class);
         messageIntent.putExtra("userName", userProfName.getText().toString());
         messageIntent.putExtra("VisitUserId", mReceiverUserId);
         startActivity(messageIntent);
     }
+
 }

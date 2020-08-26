@@ -15,13 +15,13 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
-import com.squareup.picasso.Picasso;
 
 public class FindFriendsActivity extends AppCompatActivity {
     private Toolbar mToolbar;
@@ -80,7 +80,7 @@ public class FindFriendsActivity extends AppCompatActivity {
             protected void onBindViewHolder(@NonNull FindFriendsViewHolder holder, final int position, @NonNull FindFriends model) {
                 holder.mUserName.setText(model.fullname);
                 holder.mStatus.setText(model.status);
-                Picasso.get().load(model.profileimage).into(holder.mProfileImage);
+                Glide.with(FindFriendsActivity.this).load(model.profileimage).placeholder(R.drawable.profile).into(holder.mProfileImage);
 
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -121,7 +121,7 @@ public class FindFriendsActivity extends AppCompatActivity {
             protected void onBindViewHolder(@NonNull FindFriendsViewHolder holder, final int position, @NonNull FindFriends model) {
                 holder.mUserName.setText(model.fullname);
                 holder.mStatus.setText(model.status);
-                Picasso.get().load(model.profileimage).into(holder.mProfileImage);
+                Glide.with(FindFriendsActivity.this).load(model.profileimage).placeholder(R.drawable.profile).into(holder.mProfileImage);
 
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override

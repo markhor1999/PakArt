@@ -1,37 +1,42 @@
 package com.markhor.pakart;
 
+import android.app.Activity;
 import android.content.ContentProvider;
+import android.content.Context;
 import android.graphics.Color;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
+    private Context mContext;
     private List<MessageModel> userMessagesList;
     private FirebaseAuth mAuth;
     private DatabaseReference UsersDatabaseRef;
 
-    public MessageAdapter(List<MessageModel> messageList)
-    {
+    public MessageAdapter(List<MessageModel> messageList, Context context) {
+        mContext = context;
         this.userMessagesList = messageList;
     }
+
     @NonNull
     @Override
     public MessageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -52,10 +57,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         UsersDatabaseRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if(snapshot.exists())
-                {
+                if (snapshot.exists()) {
                     String image = snapshot.child("profileimage").getValue().toString();
-                    Picasso.get().load(image).placeholder(R.drawable.profile).into(holder.receiverProfileImage);
+                    Glide.with(mContext).load(image).placeholder(R.drawable.profile).into(holder.receiverProfileImage);
                 }
             }
 
@@ -64,27 +68,23 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
             }
         });
-        if(fromMessageType.equals("text"))
-        {
+        if (fromMessageType.equals("text")) {
             holder.receiverMessageText.setVisibility(View.INVISIBLE);
             holder.receiverProfileImage.setVisibility(View.INVISIBLE);
-            if(fromUserId.equals(messageSenderId))
-            {
+            if (fromUserId.equals(messageSenderId)) {
                 holder.senderMessageText.setBackgroundResource(R.drawable.bg_sender);
                 holder.senderMessageText.setTextColor(Color.WHITE);
-                holder.senderMessageText.setPadding(30,30,30,30);
+                holder.senderMessageText.setPadding(30, 30, 30, 30);
                 holder.senderMessageText.setGravity(Gravity.LEFT);
                 holder.senderMessageText.setText(messageModel.getMessage());
-            }
-            else
-            {
+            } else {
                 holder.senderMessageText.setVisibility(View.INVISIBLE);
                 holder.receiverMessageText.setVisibility(View.VISIBLE);
                 holder.receiverProfileImage.setVisibility(View.VISIBLE);
 
                 holder.receiverMessageText.setBackgroundResource(R.drawable.bg_receiver);
                 holder.receiverMessageText.setTextColor(Color.WHITE);
-                holder.receiverMessageText.setPadding(30,30,30,30);
+                holder.receiverMessageText.setPadding(30, 30, 30, 30);
                 holder.receiverMessageText.setGravity(Gravity.LEFT);
                 holder.receiverMessageText.setText(messageModel.getMessage());
             }
